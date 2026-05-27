@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AWS Exam Prep — 400 Questions</title>
+<title>AWS Exam Prep â€” 400 Questions</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
   :root {
@@ -90,6 +90,40 @@
   .r-dot.incorrect{background:rgba(248,81,73,.2);border-color:var(--incorrect);color:var(--incorrect);}
   .r-dot:hover{border-color:var(--orange);}
   .res-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:20px;}
+
+  /* â”€â”€ Timer Pill â”€â”€ */
+  .timer-pill{display:none;align-items:center;gap:6px;background:var(--card);border:1px solid var(--correct);border-radius:20px;padding:5px 16px;font-family:'Space Mono',monospace;transition:border-color .3s;}
+  .timer-icon{font-size:13px;}
+  .timer-val{font-size:14px;font-weight:700;color:var(--correct);transition:color .3s;letter-spacing:.5px;}
+
+  /* â”€â”€ Finish Exam Button (Header) â”€â”€ */
+  #finish-exam-btn{background:rgba(248,81,73,.85);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:7px 16px;border-radius:8px;cursor:pointer;border:1px solid var(--incorrect);transition:all .15s;}
+  #finish-exam-btn:hover{background:var(--incorrect);box-shadow:0 4px 12px rgba(248,81,73,.3);}
+
+  /* â”€â”€ Flag Button â”€â”€ */
+  .btn-flag{background:transparent;color:var(--muted);border:1px solid var(--border);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:4px 10px;border-radius:7px;cursor:pointer;transition:all .15s;margin-left:auto;}
+  .btn-flag:hover{border-color:#e3b341;color:#e3b341;}
+  .btn-flag.flagged{background:rgba(227,179,65,.15);border-color:#e3b341;color:#e3b341;}
+
+  /* â”€â”€ Lock Answer Button â”€â”€ */
+  .btn-lock{background:var(--dark);color:var(--muted);border:1px solid var(--border);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:10px 18px;border-radius:8px;cursor:pointer;transition:all .15s;}
+  .btn-lock:not(.locked):hover:not(:disabled){border-color:var(--orange);color:var(--orange);}
+  .btn-lock.locked{border-color:var(--correct);color:var(--correct);background:rgba(63,185,80,.08);cursor:default;}
+  .btn-lock:disabled:not(.locked){opacity:.35;cursor:not-allowed;}
+
+  /* â”€â”€ Finish Exam Button (inside Q-card nav) â”€â”€ */
+  .btn-finish-q{background:linear-gradient(135deg,#c0392b,var(--incorrect));color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;padding:10px 22px;border-radius:8px;cursor:pointer;border:none;transition:all .15s;box-shadow:0 4px 12px rgba(248,81,73,.25);}
+  .btn-finish-q:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(248,81,73,.4);}
+
+  /* â”€â”€ Center Nav Actions Container â”€â”€ */
+  .center-actions{display:flex;gap:8px;align-items:center;}
+
+  /* â”€â”€ Flagged Dot in Results â”€â”€ */
+  .r-dot.flagged-dot{outline:2px solid #e3b341;outline-offset:2px;}
+
+  /* â”€â”€ Placeholder Styles â”€â”€ */
+  .placeholder-card{opacity:.55;}
+  .placeholder-opt{opacity:.4;cursor:default!important;}
 </style>
 </head>
 <body>
@@ -101,11 +135,16 @@
   </div>
   <div class="hdr-right">
     <div class="prog-wrap" id="hdr-prog" style="display:none">
-      <div class="prog-label"><span>Progress</span><span id="prog-label">0/50</span></div>
+      <div class="prog-label"><span>Progress</span><span id="prog-label">0/65</span></div>
       <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
     </div>
-    <div class="score-pill" id="hdr-score" style="display:none">Score: <span id="live-score">0</span>/50</div>
-    <button class="btn btn-ghost" id="back-btn" style="display:none" onclick="goHome()">← Sets</button>
+    <div class="timer-pill" id="hdr-timer" style="display:none">
+      <span class="timer-icon">â ±</span>
+      <span id="timer-display" class="timer-val">01:30:00</span>
+    </div>
+    <div class="score-pill" id="hdr-score" style="display:none">Answered: <span id="live-score">0</span></div>
+    <button class="btn" id="finish-exam-btn" style="display:none" onclick="finishExam()">Finish Exam</button>
+    <button class="btn btn-ghost" id="back-btn" style="display:none" onclick="goHome()">&larr; Sets</button>
   </div>
 </header>
 
@@ -124,7 +163,7 @@
   <p style="color:var(--muted);font-size:13px;margin-bottom:22px;">Practice Results</p>
   <div class="score-circle" id="score-circle">
     <div class="sc-pct" id="final-pct">0%</div>
-    <div class="sc-lbl" id="pass-fail-lbl">—</div>
+    <div class="sc-lbl" id="pass-fail-lbl">â€”</div>
   </div>
   <div class="r-grid">
     <div class="r-stat"><div class="r-val" id="r-correct">0</div><div class="r-lbl">Correct</div></div>
@@ -133,7 +172,7 @@
   </div>
   <div class="res-btns">
     <button class="btn btn-secondary" onclick="retakeSet()">Retake This Set</button>
-    <button class="btn btn-primary" onclick="goHome()">← Back to Sets</button>
+    <button class="btn btn-primary" onclick="goHome()">&larr; Back to Sets</button>
   </div>
   <div class="r-dots" id="r-dots"></div>
 </div>
@@ -688,7 +727,7 @@ const SETS = [
     ans: 1,
     d: "Domain 1: Cloud Concepts",
     w: false,
-    e: "Loose coupling isolates components so that if one component fails or changes, it doesn’t break the rest of the system."
+    e: "Loose coupling isolates components so that if one component fails or changes, it doesnâ€™t break the rest of the system."
   },
   {
     q: "Which cloud architectural concept is supported by a system that can scale in terms of users, traffic, or data quantity without sacrificing performance?",
@@ -805,7 +844,7 @@ const SETS = [
   {q:"Which of the following are capabilities of the AWS Cost Management tools? (Select two.)",opts:["Terminate all AWS resources automatically if budget thresholds are exceeded.","Break down AWS costs by day, service, and linked AWS account.","Create budgets and receive notifications if current or forecasted usage exceeds the budgets.","Switch automatically to Reserved Instances or Spot Instances, whichever is most cost-effective.","Move data stored in Amazon S3 to a more cost-effective storage class."],ans:[1, 2],d:"Domain 4: Billing",w:false,e:"Cost Management tools allow you to break down costs by dimension and set Budgets with alerts for cost/usage thresholds."},
   {q:"How should an Amazon EC2 instance be granted access to an Amazon S3 bucket in accordance with security best practices?",opts:["Hard code an IAM user's secret key and access key directly in the application, and upload the file","Store the IAM user's secret key and access key in a text file on the EC2 instance, read the keys, then upload the file.","Have the EC2 instance assume a role to obtain the privileges to upload the file.","Modify the S3 bucket policy so that any service can upload to it at any time."],ans:2,d:"Domain 2: Security",w:false,e:"IAM roles attached to EC2 instances provide temporary, secure credentials, eliminating the need to hard-code or store long-term keys."},
   {q:"A company has a single Amazon EC2 instance. The company wants to adopt a highly available architecture. What can the company do to meet this requirement?",opts:["Scale vertically to a larger EC2 instance size.","Scale horizontally across multiple Availability Zones.","Purchase an EC2 Dedicated Instance.","Change the EC2 instance family to a compute optimized instance."],ans:1,d:"Domain 1: Cloud Concepts",w:false,e:"High availability is achieved by scaling horizontally across multiple Availability Zones so that if one fails, others continue to operate."},
-  {q:"A company's on-premises application deployment cycle was 3–4 weeks. After migrating to the AWS Cloud, the company can deploy the application in 2–3 days. Which benefit has this company experienced by moving to the AWS Cloud?",opts:["Elasticity","Flexibility","Agility","Resilience"],ans:2,d:"Domain 1: Cloud Concepts",w:false,e:"Agility refers to the ability to innovate faster by reducing the time required to provision resources and deploy new features."},
+  {q:"A company's on-premises application deployment cycle was 3â€“4 weeks. After migrating to the AWS Cloud, the company can deploy the application in 2â€“3 days. Which benefit has this company experienced by moving to the AWS Cloud?",opts:["Elasticity","Flexibility","Agility","Resilience"],ans:2,d:"Domain 1: Cloud Concepts",w:false,e:"Agility refers to the ability to innovate faster by reducing the time required to provision resources and deploy new features."},
   {q:"Which of the following price options would result in the highest reduction after making an Amazon EC2 Dedicated Host reservation?",opts:["No upfront payment","Hourly on-demand payment","Partial upfront payment","All upfront payment"],ans:3,d:"Domain 4: Billing",w:false,e:"All upfront payment for a Reserved Instance or Dedicated Host reservation provides the maximum discount compared to partial or no upfront options."},
   {q:"Which AWS services and/or features increase availability and mitigate the effect of failures while constructing a typical three-tier web application? (Select two.)",opts:["AWS Auto Scaling for Amazon EC2 instances","Amazon VPC subnet ACLs to check the health of a service","Distributed resources across multiple Availability Zones","AWS Server Migration Service (AWS SMS) to move Amazon EC2 instances into a different Region","Distributed resources across multiple AWS points of presence"],ans:[0, 2],d:"Domain 3: Technology",w:true,e:"Auto Scaling maintains capacity and distributed resources across multiple Availability Zones ensures continuity if one AZ fails."},
   {q:"Which of the following IT responsibilities may AWS relieve a company's IT team of? (Select two.)",opts:["Patching database software","Storage capacity planning","Creating database schemas","Setting up access controls for data","Writing application code"],ans:[0, 1],d:"Domain 1: Cloud Concepts",w:true,e:"AWS Managed Services relieve teams of undifferentiated heavy lifting like storage capacity planning and (for managed DB services) patching database software."},
@@ -822,9 +861,9 @@ const SETS = [
   {q:"Which of the following are advantages of the AWS Cloud? (Choose two.)",opts:["AWS management of user-owned infrastructure","Ability to quickly change required capacity","High economies of scale","Increased deployment time to market","Increased fixed expenses"],ans:[1, 2],d:"Domain 1: Cloud Concepts",w:true,e:"AWS provides the ability to scale capacity on-demand and leverages massive economies of scale to keep prices low."},
   {q:"AWS has the ability to achieve lower pay-as-you-go pricing by aggregating usage across hundreds of thousands of users. This describes which advantage of the AWS Cloud?",opts:["Launch globally in minutes","Increase speed and agility","High economies of scale","No guessing about compute capacity"],ans:2,d:"Domain 1: Cloud Concepts",w:false,e:"Economies of scale occur when AWS passes on cost savings from massive hardware procurement to the customer through lower service prices."},
   {q:"Which AWS serverless platform services are included?",opts:["Amazon EC2, Amazon S3, Amazon Athena","Amazon Kinesis, Amazon SOS, Amazon EMR","AWS Step Functions, Amazon DynamoDB, Amazon SNS","Amazon Athena, Amazon Cognito, Amazon EC2"],ans:2,d:"Domain 3: Technology",w:false,e:"Step Functions (orchestration), DynamoDB (NoSQL DB), and SNS (Messaging) are managed serverless services in AWS."},
-  {q:"According to the AWS shared responsibility model, which of the following is the customer’s obligation?",opts:["Patching underlying infrastructure","Physical security","Patching Amazon EC2 instances","Patching network infrastructure"],ans:2,d:"Domain 2: Security",w:false,e:"Customers are responsible for patching the guest OS of EC2 instances. AWS handles the physical, network, and hypervisor patching."},
-  {q:"Which of the following is the customer’s obligation under the shared responsibility model?",opts:["Ensuring that disk drives are wiped after use","Ensuring that firmware is updated on hardware devices","Ensuring that data is encrypted at rest","Ensuring that network cables are category six or higher"],ans:2,d:"Domain 2: Security",w:false,e:"While AWS secures the hardware, customers are responsible for managing the security of their data, including enabling encryption at rest."},
-  {q:"What is the AWS Cloud’s value proposition?",opts:["AWS is responsible for security in the AWS Cloud","No long-term contract is required","Provision new servers in days","AWS manages user applications in the AWS Cloud"],ans:1,d:"Domain 1: Cloud Concepts",w:false,e:"AWS offers a pay-as-you-go model that requires no long-term contracts for the majority of its services."},
+  {q:"According to the AWS shared responsibility model, which of the following is the customerâ€™s obligation?",opts:["Patching underlying infrastructure","Physical security","Patching Amazon EC2 instances","Patching network infrastructure"],ans:2,d:"Domain 2: Security",w:false,e:"Customers are responsible for patching the guest OS of EC2 instances. AWS handles the physical, network, and hypervisor patching."},
+  {q:"Which of the following is the customerâ€™s obligation under the shared responsibility model?",opts:["Ensuring that disk drives are wiped after use","Ensuring that firmware is updated on hardware devices","Ensuring that data is encrypted at rest","Ensuring that network cables are category six or higher"],ans:2,d:"Domain 2: Security",w:false,e:"While AWS secures the hardware, customers are responsible for managing the security of their data, including enabling encryption at rest."},
+  {q:"What is the AWS Cloudâ€™s value proposition?",opts:["AWS is responsible for security in the AWS Cloud","No long-term contract is required","Provision new servers in days","AWS manages user applications in the AWS Cloud"],ans:1,d:"Domain 1: Cloud Concepts",w:false,e:"AWS offers a pay-as-you-go model that requires no long-term contracts for the majority of its services."},
   {q:"A company has a database server that is always running. The company hosts the server on Amazon EC2 instances. The instance sizes are suitable for the workload. The workload will run for 1 year. Which EC2 instance purchasing option will meet these requirements MOST cost-effectively?",opts:["Standard Reserved Instances","On-Demand Instances","Spot Instances","Convertible Reserved Instances"],ans:0,d:"Domain 4: Billing",w:false,e:"For a predictable, 1-year workload, Standard Reserved Instances provide the best discount compared to On-Demand or Spot."},
   {q:"Which tasks are the responsibility of AWS, according to the AWS shared responsibility model? (Select two.)",opts:["Patch the Amazon EC2 guest operating system","Upgrade the firmware of the network infrastructure","Apply password rotation for IAM users","Maintain the physical security of edge locations","Maintain least privilege access to the root user account"],ans:[1, 3],d:"Domain 2: Security",w:true,e:"AWS manages the security OF the cloud, including physical security of data centers and the underlying network firmware."},
   {q:"Which of the following are features of network ACLs as they are used in the AWS Cloud? (Choose two.)",opts:["They are stateless","They are stateful","They evaluate all rules before allowing traffic","They process rules in order, starting with the lowest numbered rule, when deciding whether to allow traffic","They operate at the instance level"],ans:[0, 3],d:"Domain 2: Security",w:true,e:"Network ACLs are stateless (return traffic must be explicitly allowed) and evaluated in ascending order of rule numbers."},
@@ -835,11 +874,11 @@ const SETS = [
   {q:"Which of the following are customer duties under the AWS shared responsibility model? (Select two.)",opts:["Setting up server-side encryption on an Amazon S3 bucket","Amazon RDS instance patching","Network and firewall configurations","Physical security of data center facilities","Compute capacity availability"],ans:[0, 2],d:"Domain 2: Security",w:true,e:"Customers manage data security (encryption) and network/firewall configurations (security groups) in their VPC."},
   {q:"A company needs to graphically visualize AWS billing and usage over time. The company also needs information about its AWS monthly costs. Which AWS Billing and Cost Management tool provides this data in a graphical format?",opts:["AWS Bills","Cost Explorer","AWS Cost and Usage Report","AWS Budgets"],ans:1,d:"Domain 4: Billing",w:false,e:"Cost Explorer provides a graphical interface to explore, visualize, and analyze your AWS spending and usage over time."},
   {q:"A company wants to run production workloads on AWS. The company needs concierge service, a designated AWS technical account manager (TAM), and technical support that is available 24 hours a day, 7 days a week. Which AWS Support plan will meet these requirements?",opts:["AWS Basic Support","AWS Enterprise Support","AWS Business Support","AWS Developer Support"],ans:1,d:"Domain 4: Billing",w:false,e:"Enterprise Support is the only plan that includes a dedicated Technical Account Manager (TAM) and concierge support."},
-  {q:"Which of the following tasks is the AWS customer’s duty under the shared responsibility model? (Select two.)",opts:["Ensuring that application data is encrypted at rest","Ensuring that AWS NTP servers are set to the correct time","Ensuring that users have received security training in the use of AWS services","Ensuring that access to data centers is restricted","Ensuring that hardware is disposed of properly"],ans:[0, 2],d:"Domain 2: Security",w:true,e:"Customers are responsible for data security (encryption) and user training/management regarding AWS service usage."},
+  {q:"Which of the following tasks is the AWS customerâ€™s duty under the shared responsibility model? (Select two.)",opts:["Ensuring that application data is encrypted at rest","Ensuring that AWS NTP servers are set to the correct time","Ensuring that users have received security training in the use of AWS services","Ensuring that access to data centers is restricted","Ensuring that hardware is disposed of properly"],ans:[0, 2],d:"Domain 2: Security",w:true,e:"Customers are responsible for data security (encryption) and user training/management regarding AWS service usage."},
   {q:"Before transferring an environment to the AWS Cloud, a cloud practitioner must receive AWS compliance reports. How are these reports produced?",opts:["Contact the AWS Compliance team","Download the reports from AWS Artifact","Open a case with AWS Support","Generate the reports with Amazon Macie"],ans:1,d:"Domain 2: Security",w:false,e:"AWS Artifact is the central self-service portal for downloading compliance reports like SOC, PCI, and HIPAA documents."},
   {q:"Which change management actions, according to the AWS Well-Architected Framework, should be followed to ensure AWS Cloud reliability? (Select two.)",opts:["Use AWS Config to generate an inventory of AWS resources","Use service limits to prevent users from creating or making changes to AWS resources","Use AWS CloudTrail to record AWS API calls into an auditable log file","Use AWS Certificate Manager to whitelist approved AWS resources and services","Use Amazon GuardDuty to validate configuration changes made to AWS resources"],ans:[0, 2],d:"Domain 1: Cloud Concepts",w:true,e:"Reliability involves tracking resources (Config) and auditing all changes via API logs (CloudTrail) to ensure compliance and fault recovery."},
   {q:"What may be associated to an Amazon EC2 instance through AWS Identity and Access Management (IAM) to initiate service requests?",opts:["Group","Role","Policy","Access key"],ans:1,d:"Domain 2: Security",w:false,e:"IAM Roles are the best practice for assigning permissions to EC2 instances to perform actions on other AWS services."},
-  {q:"Which of the following actions is the customer’s responsibility under the AWS shared responsibility model? (Select two.)",opts:["Patching operating system components for Amazon Relational Database Server (Amazon RDS)","Encrypting data on the client-side","Training the data center staff","Configuring Network Access Control Lists (ACL)","Maintaining environmental controls within a data center"],ans:[1, 3],d:"Domain 2: Security",w:true,e:"Customers are responsible for data-level security (client-side encryption) and network-level security (NACL configuration)."},
+  {q:"Which of the following actions is the customerâ€™s responsibility under the AWS shared responsibility model? (Select two.)",opts:["Patching operating system components for Amazon Relational Database Server (Amazon RDS)","Encrypting data on the client-side","Training the data center staff","Configuring Network Access Control Lists (ACL)","Maintaining environmental controls within a data center"],ans:[1, 3],d:"Domain 2: Security",w:true,e:"Customers are responsible for data-level security (client-side encryption) and network-level security (NACL configuration)."},
   {q:"Which architecture design principle describes the need to isolate failures between dependent components in the AWS Cloud?",opts:["Use a monolithic design","Design for automation","Design for single points of failure","Loosely couple components"],ans:3,d:"Domain 1: Cloud Concepts",w:false,e:"Loose coupling ensures that if one service fails, the dependent services can continue to operate or queue requests until the service recovers."},
   {q:"Which AWS services are managed database services? (Choose two.)",opts:["Amazon Elastic Block Store (Amazon EBS)","Amazon S3","Amazon RDS","Amazon Elastic File System (Amazon EFS)","Amazon DynamoDB"],ans:[2, 4],d:"Domain 3: Technology",w:true,e:"Amazon RDS (relational) and Amazon DynamoDB (NoSQL) are the primary managed database services provided by AWS."},
   {q:"Which AWS services or functionalities enable failover across several AWS Regions to ensure high availability and low latency? (Select two.)",opts:["Amazon Route 53","Network Load Balancer","Amazon S3 Transfer Acceleration","AWS Global Accelerator","Application Load Balancer"],ans:[0, 3],d:"Domain 3: Technology",w:true,e:"Route 53 (DNS routing) and AWS Global Accelerator (Anycast IP routing) are the standard tools for cross-region failover and latency reduction."},
@@ -854,7 +893,7 @@ const SETS = [
       "The company will be charged the standard pay-as-you-go service rates for the usage that exceeds the Free Tier usage.",
       "AWS Support will contact the company to set up standard service charges.",
       "The company will be charged for the services it consumed during the Free Tier period, plus additional charges for service consumption after the Free Tier period.",
-      "The company’s AWS account will be frozen and can be restarted after a payment plan is established."
+      "The companyâ€™s AWS account will be frozen and can be restarted after a payment plan is established."
     ],
     ans: 0,
     d: "Domain 4: Billing, Pricing, and Support",
@@ -940,7 +979,7 @@ const SETS = [
     e: "AWS Global Accelerator uses the AWS global network backbone and Anycast routing to optimize network pathways, boosting global application speed and availability."
   },
   {
-    q: "Which of the following tasks is the customer’s duty under the shared responsibility model? (Select the best combined option)",
+    q: "Which of the following tasks is the customerâ€™s duty under the shared responsibility model? (Select the best combined option)",
     opts: [
       "Maintaining the underlying EC2 hardware & Replacing failed hard disk drives.",
       "Managing the VPC network access control lists & Encrypting data in transit and at rest.",
@@ -2296,7 +2335,7 @@ const SETS = [
     e: "AWS Direct Connect bypasses the public internet entirely to form a private, dedicated physical telecommunications line between an on-premises network facility and an AWS routing hub."
   },
   {
-    q: "Which of the following may be used to restrict certain users’ access to Amazon Simple Storage Service (Amazon S3) buckets?",
+    q: "Which of the following may be used to restrict certain usersâ€™ access to Amazon Simple Storage Service (Amazon S3) buckets?",
     opts: [
       "A public and private key-pair",
       "Amazon Inspector",
@@ -2361,7 +2400,7 @@ const SETS = [
     e: "AWS X-Ray helps developers analyze and debug distributed microservices applications by providing comprehensive trace maps across complex execution chains."
   },
   {
-    q: "Which AWS shared responsibility model duties are the customer’s responsibility? (Select the best combined option)",
+    q: "Which AWS shared responsibility model duties are the customerâ€™s responsibility? (Select the best combined option)",
     opts: [
       "Infrastructure facilities access & Hardware lifecycle management",
       "Configuration management of applications & Security groups configuration",
@@ -2374,7 +2413,7 @@ const SETS = [
     e: "The customer controls cloud settings and access definitions. This includes managing custom internal application configurations and defining firewall boundaries via Security Groups."
   },
   {
-    q: "Which AWS Cloud service gives tips on how to optimize an AWS account’s performance?",
+    q: "Which AWS Cloud service gives tips on how to optimize an AWS accountâ€™s performance?",
     opts: [
       "Amazon Inspector",
       "AWS Trusted Advisor",
@@ -2517,7 +2556,7 @@ const SETS = [
     e: "AWS OpsWorks is a configuration management engine that allows you to deploy and manage server groups using automated Chef recipes or Puppet code books."
   },
   {
-    q: "A corporation wants to remove the necessity for pre-deployment estimation of infrastructure capacity. Additionally, the corporation wants to spend its money on cloud resources only when the resources are used. Which AWS Cloud feature best meets the business’s needs?",
+    q: "A corporation wants to remove the necessity for pre-deployment estimation of infrastructure capacity. Additionally, the corporation wants to spend its money on cloud resources only when the resources are used. Which AWS Cloud feature best meets the businessâ€™s needs?",
     opts: [
       "Reliability",
       "Global reach",
@@ -2595,7 +2634,7 @@ const SETS = [
     e: "AWS Marketplace provides a digital, managed catalog layout enabling companies to license third-party software products that are built to run cleanly on top of AWS."
   },
   {
-    q: "A business’s user base is worldwide in scope. The organization needs a highly available application with reduced latency for end users. Which AWS architecture approach will meet these criteria the MOST effectively?",
+    q: "A businessâ€™s user base is worldwide in scope. The organization needs a highly available application with reduced latency for end users. Which AWS architecture approach will meet these criteria the MOST effectively?",
     opts: [
       "Single-Region, Multi-AZ architecture",
       "Multi-Region, active-active architecture",
@@ -2608,7 +2647,7 @@ const SETS = [
     e: "An active-active Multi-Region framework processes data entries across separate international zones concurrently, ensuring high availability and low latency for a global user base."
   },
   {
-    q: "Which duty is the customer’s responsibility under the AWS shared responsibility model?",
+    q: "Which duty is the customerâ€™s responsibility under the AWS shared responsibility model?",
     opts: [
       "Maintaining the infrastructure needed to run AWS Lambda",
       "Updating the operating system of Amazon DynamoDB instances",
@@ -4764,13 +4803,76 @@ const SETS = [
 // DO NOT EDIT BELOW THIS LINE
 // =====================================================================
 
-let currentSet = null;
-let currentQ = 0;
-let userAnswers = [];
-let submitted = [];
-let setScores = {};
-let qCount = 0; 
+// â”€â”€ Re-chunk 400 questions into 8 sets of 65 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const ALL_QUESTIONS = SETS.flat();
+const TARGET_TOTAL = 520; // 8 Ã— 65
+for (let _i = ALL_QUESTIONS.length; _i < TARGET_TOTAL; _i++) {
+  ALL_QUESTIONS.push({
+    q: `Placeholder #${_i - 399} â€” This question slot is reserved for upcoming AWS CLF-C02 exam content.`,
+    opts: ["Content coming soon", "Content coming soon", "Content coming soon", "Content coming soon"],
+    ans: 0, d: "Content Pending", placeholder: true,
+    e: "This question will be replaced with actual exam content in a future update."
+  });
+}
+const EXAM_SETS = Array.from({length: 8}, (_, i) => ALL_QUESTIONS.slice(i * 65, (i + 1) * 65));
 
+// â”€â”€ Application State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+let currentSet       = null;
+let currentQ         = 0;
+let userAnswers      = [];
+let submitted        = []; // true = answer locked by user
+let flaggedQuestions = [];
+let setScores        = {};
+let qCount           = 0;
+let reviewMode       = false;
+
+// â”€â”€ Timer State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+let timerInterval = null;
+let timerSeconds  = 5400;
+let timerRunning  = false;
+
+// â”€â”€ Timer Functions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function startTimer() {
+  timerSeconds = 5400;
+  timerRunning = true;
+  document.getElementById('hdr-timer').style.display = 'flex';
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    timerSeconds--;
+    updateTimerDisplay();
+    if (timerSeconds <= 0) {
+      clearInterval(timerInterval);
+      timerRunning = false;
+      finishExam();
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  timerRunning = false;
+  const el = document.getElementById('hdr-timer');
+  if (el) el.style.display = 'none';
+}
+
+function updateTimerDisplay() {
+  const h    = Math.floor(timerSeconds / 3600);
+  const m    = Math.floor((timerSeconds % 3600) / 60);
+  const s    = timerSeconds % 60;
+  const text = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const el   = document.getElementById('timer-display');
+  const pill = document.getElementById('hdr-timer');
+  el.textContent = text;
+  if (timerSeconds < 600) {
+    el.style.color = 'var(--incorrect)'; pill.style.borderColor = 'var(--incorrect)';
+  } else if (timerSeconds < 1800) {
+    el.style.color = 'var(--orange)'; pill.style.borderColor = 'var(--orange)';
+  } else {
+    el.style.color = 'var(--correct)'; pill.style.borderColor = 'var(--correct)';
+  }
+}
+
+// â”€â”€ Utility â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function isAnswerCorrect(userAns, correctAns) {
   if (Array.isArray(correctAns)) {
     if (!Array.isArray(userAns) || userAns.length !== correctAns.length) return false;
@@ -4779,202 +4881,290 @@ function isAnswerCorrect(userAns, correctAns) {
   return userAns === correctAns;
 }
 
+// â”€â”€ Set Selection Screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderSetScreen() {
-  document.getElementById('set-screen').style.display='block';
-  document.getElementById('quiz-screen').style.display='none';
-  document.getElementById('results-screen').style.display='none';
-  document.getElementById('hdr-prog').style.display='none';
-  document.getElementById('hdr-score').style.display='none';
-  document.getElementById('back-btn').style.display='none';
+  reviewMode = false;
+  stopTimer();
+  document.getElementById('set-screen').style.display      = 'block';
+  document.getElementById('quiz-screen').style.display     = 'none';
+  document.getElementById('results-screen').style.display  = 'none';
+  document.getElementById('hdr-prog').style.display        = 'none';
+  document.getElementById('hdr-score').style.display       = 'none';
+  document.getElementById('back-btn').style.display        = 'none';
+  document.getElementById('finish-exam-btn').style.display = 'none';
 
   const grid = document.getElementById('sets-grid');
-  
-  if (SETS.length === 0) {
-      grid.innerHTML = "<div style='color:var(--muted)'>No question sets loaded yet. Waiting for data paste.</div>";
-      return;
-  }
-
-  grid.innerHTML = SETS.map((set,i) => {
-    const score = setScores[i];
-    const done = score !== undefined;
-    const pct = done ? Math.round((score/set.length)*100) : null;
+  grid.innerHTML = EXAM_SETS.map((set, i) => {
+    const score  = setScores[i];
+    const done   = score !== undefined;
+    const realQs = set.filter(q => !q.placeholder).length;
+    const pct    = done ? Math.round((score / realQs) * 100) : null;
     return `
-      <div class="set-card ${done?'done':''}" onclick="startSet(${i})">
-        ${done ? `<div class="set-score-badge">${pct}% ${pct>=70?'✓ PASS':'✗ FAIL'}</div>` : ''}
-        <div class="set-num">0${i+1}</div>
-        <div class="set-name">Practice Set ${i+1}</div>
-        <div class="set-info">${set.length} questions · ${done?'Retake':'Start'}</div>
-      </div>
-    `;
+      <div class="set-card ${done ? 'done' : ''}" onclick="startSet(${i})">
+        ${done ? `<div class="set-score-badge">${pct}% ${pct >= 70 ? 'âœ“ PASS' : 'âœ— FAIL'}</div>` : ''}
+        <div class="set-num">0${i + 1}</div>
+        <div class="set-name">Practice Set ${i + 1}</div>
+        <div class="set-info">${realQs} questions &middot; ${done ? 'Retake' : 'Start'}</div>
+      </div>`;
   }).join('');
 }
 
+// â”€â”€ Start Set â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function startSet(setIndex) {
-  currentSet = setIndex;
-  currentQ = 0;
-  qCount = SETS[currentSet].length;
-  userAnswers = SETS[currentSet].map(q => Array.isArray(q.ans) ? [] : null);
-  submitted = new Array(qCount).fill(false);
-  document.getElementById('set-screen').style.display='none';
-  document.getElementById('quiz-screen').style.display='block';
-  document.getElementById('results-screen').style.display='none';
-  document.getElementById('hdr-prog').style.display='block';
-  document.getElementById('hdr-score').style.display='block';
-  document.getElementById('back-btn').style.display='block';
-  document.getElementById('prog-label').textContent = `0/${qCount}`;
+  reviewMode       = false;
+  currentSet       = setIndex;
+  currentQ         = 0;
+  qCount           = EXAM_SETS[currentSet].length;
+  userAnswers      = EXAM_SETS[currentSet].map(q => Array.isArray(q.ans) ? [] : null);
+  submitted        = new Array(qCount).fill(false);
+  flaggedQuestions = new Array(qCount).fill(false);
+
+  document.getElementById('set-screen').style.display      = 'none';
+  document.getElementById('quiz-screen').style.display     = 'block';
+  document.getElementById('results-screen').style.display  = 'none';
+  document.getElementById('hdr-prog').style.display        = 'block';
+  document.getElementById('hdr-score').style.display       = 'block';
+  document.getElementById('back-btn').style.display        = 'block';
+  document.getElementById('finish-exam-btn').style.display = 'block';
+  document.getElementById('prog-label').textContent        = `0/${qCount}`;
+
+  startTimer();
   renderQuestion();
   updateProgress();
 }
 
+// â”€â”€ Render Question â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderQuestion() {
-  const q = SETS[currentSet][currentQ];
-  const answered = submitted[currentQ];
-  
-  // Calculate selection count criteria
-  const isMulti = Array.isArray(q.ans);
-  const requiredCount = isMulti ? q.ans.length : 1;
-  const userSelection = userAnswers[currentQ];
-  const selectedCount = isMulti ? (userSelection ? userSelection.length : 0) : (userSelection !== null ? 1 : 0);
-  const canSubmit = selectedCount === requiredCount;
+  const q           = EXAM_SETS[currentSet][currentQ];
+  const isPlaceholder = !!q.placeholder;
+  const isMulti     = Array.isArray(q.ans);
+  const userSel     = userAnswers[currentQ];
+  const isFlagged   = flaggedQuestions[currentQ];
+  const isFirst     = currentQ === 0;
+  const isLast      = currentQ === qCount - 1;
+  const isLocked    = submitted[currentQ];
+
+  // Determine if current selection is complete
+  const hasAnswer = isMulti
+    ? (Array.isArray(userSel) && userSel.length === q.ans.length)
+    : userSel !== null;
+
+  // Build options
+  const optsHtml = q.opts.map((opt, i) => {
+    const isCorrect  = isMulti ? q.ans.includes(i) : i === q.ans;
+    const isSelected = isMulti
+      ? (Array.isArray(userSel) && userSel.includes(i))
+      : userSel === i;
+
+    let cls = '';
+    if (isPlaceholder) {
+      cls = 'disabled placeholder-opt';
+    } else if (reviewMode) {
+      // Full feedback revealed only in review mode
+      cls = 'disabled ';
+      if (isCorrect) cls += 'correct';
+      else if (isSelected) cls += 'incorrect';
+    } else {
+      // Active exam: selection highlight only â€” NO correct/incorrect feedback
+      if (isLocked) cls = 'disabled ';
+      if (isSelected) cls += 'selected';
+    }
+
+    const clickable = !reviewMode && !isPlaceholder && !isLocked;
+    return `
+      <div class="opt ${cls.trim()}"${clickable ? ` onclick="selectOpt(${i})"` : ''} id="opt${i}">
+        <span class="opt-ltr">${String.fromCharCode(65 + i)}</span>
+        <span>${opt}</span>
+      </div>`;
+  }).join('');
+
+  // Explanation: ONLY shown in review mode after exam ends
+  const showExp = reviewMode && !isPlaceholder;
+
+  // Center action button
+  let centerBtn = '';
+  if (isPlaceholder) {
+    centerBtn = '';
+  } else if (reviewMode) {
+    centerBtn = `<button class="btn btn-ghost" onclick="backToResults()">&#x21A9; Results</button>`;
+  } else if (isLocked) {
+    centerBtn = `<button class="btn btn-lock locked" disabled>&#x1F512; Locked</button>`;
+  } else {
+    centerBtn = `<button class="btn btn-lock" onclick="lockAnswer()"${!hasAnswer ? ' disabled' : ''}>&#x1F513; Lock Answer</button>`;
+  }
+
+  // Right navigation button
+  let rightBtn = '';
+  if (!reviewMode && isLast) {
+    rightBtn = `<button class="btn btn-finish-q" onclick="finishExam()">Finish Exam &#x2713;</button>`;
+  } else {
+    const disableNext = isLast && reviewMode;
+    rightBtn = `<button class="btn btn-secondary" onclick="navQ(1)"${disableNext ? ' disabled' : ''}>Next &rarr;</button>`;
+  }
 
   document.getElementById('q-container').innerHTML = `
-    <div class="q-card">
+    <div class="q-card${isPlaceholder ? ' placeholder-card' : ''}">
       <div class="q-meta">
-        <span class="q-num">Set ${currentSet+1} · Q${currentQ+1}/${qCount}</span>
-        ${isMulti ? `<span class="q-num" style="background:rgba(56,139,253,0.1);color:#58a6ff;border:1px solid rgba(56,139,253,0.2)">Select ${requiredCount}</span>` : ''}
+        <span class="q-num">Set ${currentSet + 1} &middot; Q${currentQ + 1}/${qCount}</span>
+        ${isMulti ? `<span class="q-num" style="background:rgba(56,139,253,0.1);color:#58a6ff;border:1px solid rgba(56,139,253,0.2)">Select ${q.ans.length}</span>` : ''}
+        ${isPlaceholder ? `<span class="q-num" style="background:rgba(125,133,144,.15);color:var(--muted);border:1px solid var(--border)">Content Pending</span>` : ''}
+        ${reviewMode ? `<span class="q-num" style="background:rgba(227,179,65,.1);color:#e3b341;border:1px solid rgba(227,179,65,.3)">Review Mode</span>` : ''}
+        ${!isPlaceholder && !reviewMode ? `
+          <button class="btn-flag${isFlagged ? ' flagged' : ''}" onclick="toggleFlag()" title="${isFlagged ? 'Remove flag' : 'Flag for review'}">
+            ${isFlagged ? '&#x1F6A9; Flagged' : '&#x2690; Flag'}
+          </button>` : ''}
       </div>
       <div class="q-text">${q.q}</div>
-      <div class="options" id="opts">
-        ${q.opts.map((opt,i)=>{
-          const isCorrect = isMulti ? q.ans.includes(i) : i === q.ans;
-          const isSelected = isMulti ? (userSelection && userSelection.includes(i)) : userSelection === i;
-          const isUserIncorrect = isSelected && !isCorrect;
-          
-          let optClass = '';
-          if (answered) {
-            optClass = 'disabled ';
-            if (isCorrect) optClass += 'correct';
-            else if (isUserIncorrect) optClass += 'incorrect';
-          } else {
-            if (isSelected) optClass += 'selected';
-          }
-
-          return `
-            <div class="opt ${optClass}"
-                 onclick="${answered?'':'selectOpt('+i+')'}" id="opt${i}">
-              <span class="opt-ltr">${String.fromCharCode(65+i)}</span>
-              <span>${opt}</span>
-            </div>`;
-        }).join('')}
-      </div>
-      <div class="exp ${answered?'show':''}" id="exp">
-        <strong>💡 EXPLANATION</strong>${q.e}
+      <div class="options">${optsHtml}</div>
+      <div class="exp${showExp ? ' show' : ''}">
+        <strong>&#x1F4A1; EXPLANATION</strong>${q.e}
       </div>
       <div class="nav-btns">
-        <button class="btn btn-secondary" onclick="navQ(-1)" ${currentQ===0?'disabled':''}>← Prev</button>
-        <button class="btn btn-primary" id="submit-btn"
-          onclick="${answered?(currentQ===qCount-1?'showResults()':'navQ(1)'):'submitQ()'}"
-          ${!answered&&!canSubmit?'disabled':''}>
-          ${answered?(currentQ===qCount-1?'View Results':'Next →'):'Submit Answer'}
-        </button>
+        <button class="btn btn-secondary" onclick="navQ(-1)"${isFirst ? ' disabled' : ''}>&larr; Prev</button>
+        <div class="center-actions">${centerBtn}</div>
+        ${rightBtn}
       </div>
     </div>`;
 }
 
+// â”€â”€ Interactions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function selectOpt(i) {
-  if(submitted[currentQ]) return;
-  const q = SETS[currentSet][currentQ];
-  
+  if (reviewMode) return;
+  const q = EXAM_SETS[currentSet][currentQ];
+  if (q.placeholder || submitted[currentQ]) return;
+
   if (Array.isArray(q.ans)) {
-    let arr = userAnswers[currentQ] || [];
+    let arr = Array.isArray(userAnswers[currentQ]) ? [...userAnswers[currentQ]] : [];
     if (arr.includes(i)) {
-      arr = arr.filter(x => x !== i); // Toggle off
+      arr = arr.filter(x => x !== i);
     } else if (arr.length < q.ans.length) {
-      arr.push(i); // Add selection
+      arr.push(i);
     }
     userAnswers[currentQ] = arr;
-    
-    // Toggle active state in UI
-    document.querySelectorAll('.opt').forEach((el, idx) => {
-      el.classList.toggle('selected', arr.includes(idx));
-    });
-    
-    // Enable submit if correct number selected
-    document.getElementById('submit-btn').disabled = (arr.length !== q.ans.length);
   } else {
     userAnswers[currentQ] = i;
-    document.querySelectorAll('.opt').forEach((el, idx) => {
-      el.classList.toggle('selected', idx === i);
-    });
-    document.getElementById('submit-btn').disabled = false;
   }
-}
-
-function submitQ() {
-  const q = SETS[currentSet][currentQ];
-  const userSelection = userAnswers[currentQ];
-  if (Array.isArray(q.ans)) {
-    if (!userSelection || userSelection.length !== q.ans.length) return;
-  } else {
-    if (userSelection === null) return;
-  }
-  submitted[currentQ] = true;
   renderQuestion();
   updateProgress();
 }
 
+function lockAnswer() {
+  if (reviewMode || submitted[currentQ]) return;
+  const q       = EXAM_SETS[currentSet][currentQ];
+  const userSel = userAnswers[currentQ];
+  const isMulti = Array.isArray(q.ans);
+  const hasAnswer = isMulti
+    ? (Array.isArray(userSel) && userSel.length === q.ans.length)
+    : userSel !== null;
+  if (!hasAnswer) return;
+  submitted[currentQ] = true;
+  renderQuestion();
+}
+
+function toggleFlag() {
+  if (reviewMode) return;
+  flaggedQuestions[currentQ] = !flaggedQuestions[currentQ];
+  renderQuestion();
+}
+
 function navQ(dir) {
   const next = currentQ + dir;
-  if(next<0||next>=qCount) return;
+  if (next < 0 || next >= qCount) return;
   currentQ = next;
   renderQuestion();
 }
 
 function updateProgress() {
-  const done = submitted.filter(Boolean).length;
-  const correct = SETS[currentSet].filter((q,i)=>submitted[i]&&isAnswerCorrect(userAnswers[i], q.ans)).length;
-  document.getElementById('prog-label').textContent = `${done}/${qCount}`;
-  document.getElementById('prog-fill').style.width = `${(done/qCount)*100}%`;
-  document.getElementById('live-score').textContent = correct;
+  let answered = 0, realTotal = 0;
+  for (let i = 0; i < qCount; i++) {
+    const q = EXAM_SETS[currentSet][i];
+    if (q.placeholder) continue;
+    realTotal++;
+    const a    = userAnswers[i];
+    const done = Array.isArray(q.ans)
+      ? (Array.isArray(a) && a.length === q.ans.length)
+      : a !== null;
+    if (done) answered++;
+  }
+  document.getElementById('prog-label').textContent  = `${answered}/${realTotal}`;
+  document.getElementById('prog-fill').style.width   = realTotal > 0 ? `${(answered / realTotal) * 100}%` : '0%';
+  document.getElementById('live-score').textContent  = answered;
+}
+
+// â”€â”€ Finish & Results â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function finishExam() {
+  stopTimer();
+  reviewMode = true;
+  document.getElementById('finish-exam-btn').style.display = 'none';
+  showResults();
 }
 
 function showResults() {
-  const correct = SETS[currentSet].filter((q,i)=>submitted[i]&&isAnswerCorrect(userAnswers[i], q.ans)).length;
+  const set = EXAM_SETS[currentSet];
+  let correct = 0, realTotal = 0;
+  for (let i = 0; i < set.length; i++) {
+    if (set[i].placeholder) continue;
+    realTotal++;
+    if (isAnswerCorrect(userAnswers[i], set[i].ans)) correct++;
+  }
   setScores[currentSet] = correct;
-  const pct = Math.round((correct/qCount)*100);
-  const pass = pct>=70;
-  document.getElementById('quiz-screen').style.display='none';
-  document.getElementById('results-screen').style.display='block';
-  document.getElementById('res-title').textContent = `Set ${currentSet+1} Complete`;
-  document.getElementById('final-pct').textContent = pct+'%';
-  document.getElementById('pass-fail-lbl').textContent = pass?'PASS ✓':'FAIL — Keep Studying';
-  const sc = document.getElementById('score-circle');
-  sc.className = 'score-circle '+(pass?'pass':'fail');
-  document.getElementById('r-correct').textContent = correct;
-  document.getElementById('r-wrong').textContent = qCount-correct;
-  document.getElementById('r-pct').textContent = pct+'%';
-  document.getElementById('r-dots').innerHTML = SETS[currentSet].map((q,i)=>{
-    const cls = submitted[i]?(isAnswerCorrect(userAnswers[i], q.ans)?'correct':'incorrect'):'';
-    return `<div class="r-dot ${cls}" onclick="jumpTo(${i})">${i+1}</div>`;
-  }).join('');
+  const pct  = realTotal > 0 ? Math.round((correct / realTotal) * 100) : 0;
+  const pass = pct >= 70;
+
+  document.getElementById('quiz-screen').style.display     = 'none';
+  document.getElementById('results-screen').style.display  = 'block';
+  document.getElementById('hdr-score').style.display       = 'none';
+  document.getElementById('hdr-prog').style.display        = 'none';
+  document.getElementById('finish-exam-btn').style.display = 'none';
+
+  document.getElementById('res-title').textContent     = `Set ${currentSet + 1} Complete`;
+  document.getElementById('final-pct').textContent     = pct + '%';
+  document.getElementById('pass-fail-lbl').textContent = pass ? 'PASS \u2713' : 'FAIL \u2014 Keep Studying';
+  document.getElementById('score-circle').className    = 'score-circle ' + (pass ? 'pass' : 'fail');
+  document.getElementById('r-correct').textContent     = correct;
+  document.getElementById('r-wrong').textContent       = realTotal - correct;
+  document.getElementById('r-pct').textContent         = pct + '%';
+
+  document.getElementById('r-dots').innerHTML =
+    `<p style="width:100%;text-align:center;font-size:12px;color:var(--muted);margin-bottom:10px;">Click any number to review that question &amp; see the explanation</p>` +
+    set.map((q, i) => {
+      if (q.placeholder) return `<div class="r-dot" style="opacity:.25;cursor:default;" title="Placeholder">&middot;</div>`;
+      const a       = userAnswers[i];
+      const hasAns  = Array.isArray(q.ans)
+        ? (Array.isArray(a) && a.length === q.ans.length) : a !== null;
+      const correct_q = hasAns && isAnswerCorrect(a, q.ans);
+      const flagged   = flaggedQuestions[i];
+      const cls       = hasAns ? (correct_q ? 'correct' : 'incorrect') : '';
+      return `<div class="r-dot ${cls}${flagged ? ' flagged-dot' : ''}" onclick="jumpTo(${i})" title="Q${i + 1}${flagged ? ' \uD83D\uDEA9' : ''}">${i + 1}</div>`;
+    }).join('');
+}
+
+function backToResults() {
+  document.getElementById('quiz-screen').style.display    = 'none';
+  document.getElementById('results-screen').style.display = 'block';
+  document.getElementById('hdr-prog').style.display       = 'none';
 }
 
 function jumpTo(i) {
   currentQ = i;
-  document.getElementById('quiz-screen').style.display='block';
-  document.getElementById('results-screen').style.display='none';
+  document.getElementById('quiz-screen').style.display    = 'block';
+  document.getElementById('results-screen').style.display = 'none';
+  document.getElementById('hdr-prog').style.display       = 'block';
   renderQuestion();
 }
 
 function retakeSet() {
+  reviewMode = false;
   startSet(currentSet);
 }
 
 function goHome() {
+  stopTimer();
+  reviewMode = false;
   renderSetScreen();
 }
 
 renderSetScreen();
+
 </script>
 </body>
-</html>
