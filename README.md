@@ -16,6 +16,10 @@ A free, single-file web app for preparing for the **AWS Certified Cloud Practiti
 - Per-set scoring with a 70% pass threshold and a visual score circle
 - Progress tracking across sessions (stored in your browser)
 
+## Known issues
+
+- On mobile screens, some buttons are misplaced and some text is misaligned. Mobile layout fixes are in progress.
+
 ## Repo structure
 
 ```
