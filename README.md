@@ -4,6 +4,10 @@
 
 A free, single-file web app for preparing for the **AWS Certified Cloud Practitioner (CLF-C02)** exam. Open it in any browser — no build step, no dependencies, works offline once loaded.
 
+## Disclaimer
+
+This is an independent study tool. The practice questions are original material written for exam preparation and are not official AWS exam questions. This project is not affiliated with, sponsored, or endorsed by Amazon Web Services, Inc.
+
 ## What is inside
 
 - **400 practice questions** covering all four CLF-C02 exam domains:
