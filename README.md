@@ -25,7 +25,7 @@ This is an independent study tool. The practice questions are original material 
 | | This app | The real CLF-C02 exam |
 | --- | --- | --- |
 | Questions per set | 65 | 65 (50 scored, 15 unscored) |
-| Time limit | none | 90 minutes |
+| Time limit | 90-minute countdown per set — the set auto-submits when it hits zero | 90 minutes |
 | Pass mark | 70% per set | 700 out of 1000 (scaled score) |
 | Domains | all four covered | Cloud Concepts 24%, Security and Compliance 30%, Cloud Technology and Services 34%, Billing, Pricing, and Support 12% |
 
