@@ -20,6 +20,17 @@ This is an independent study tool. The practice questions are original material 
 - Per-set scoring with a 70% pass threshold and a visual score circle
 - Progress tracking across sessions (stored in your browser)
 
+## How this maps to the real exam
+
+| | This app | The real CLF-C02 exam |
+| --- | --- | --- |
+| Questions per set | 65 | 65 (50 scored, 15 unscored) |
+| Time limit | none | 90 minutes |
+| Pass mark | 70% per set | 700 out of 1000 (scaled score) |
+| Domains | all four covered | Cloud Concepts 24%, Security and Compliance 30%, Cloud Technology and Services 34%, Billing, Pricing, and Support 12% |
+
+Note: the 70% pass mark here is a rule of thumb, not the exam’s real scoring model — the actual exam uses a scaled 100–1000 score, so consistently clearing 70% in practice is a good sign but not a guarantee.
+
 ## Known issues
 
 - On mobile screens, some buttons are misplaced and some text is misaligned. Mobile layout fixes are in progress.
