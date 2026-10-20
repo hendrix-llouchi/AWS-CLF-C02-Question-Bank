@@ -33,7 +33,7 @@ Note: the 70% pass mark here is a rule of thumb, not the exam’s real scoring m
 
 ## Known issues
 
-- On mobile screens, some buttons are misplaced and some text is misaligned. Mobile layout fixes are in progress.
+None at the moment. The mobile layout issues (misplaced buttons, misaligned text) have been fixed — the header now adapts properly on small screens.
 
 ## Repo structure
 
