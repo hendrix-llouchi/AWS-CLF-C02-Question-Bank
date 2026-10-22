@@ -40,6 +40,7 @@ None at the moment. The mobile layout issues (misplaced buttons, misaligned text
 ```
 ├── AWS_Exam_Prep.html   # The entire app — questions, styles, and logic in one file
 ├── vercel.json           # Routes / to the app on the live site
+├── LICENSE               # MIT license
 └── README.md             # This file
 ```
 
@@ -50,3 +51,7 @@ Just open `AWS_Exam_Prep.html` in a browser. That is all.
 ## Deployment
 
 The repo is linked to a Vercel project (`aws-clf-c02-question-bank`). Every push to `main` redeploys automatically.
+
+## License
+
+MIT — see the [LICENSE](LICENSE) file. Free to use, copy, modify, and share.
